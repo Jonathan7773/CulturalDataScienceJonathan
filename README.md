@@ -1,2 +1,2 @@
 # CulturalDataScienceJonathan
-Cultural Data Science Repo for Assignments
+Cultural Datascience Repo for Assignments
