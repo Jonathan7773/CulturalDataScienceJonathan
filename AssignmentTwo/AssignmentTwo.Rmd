@@ -1,0 +1,159 @@
+---
+title: Assignment 2
+author: Jonathan Ehrenreich Laursen
+output: html_document
+---
+
+
+# Part 1
+
+```{r}
+# Loading packages
+library(dslabs)
+library(dplyr)
+library(tidyverse)
+library(car)
+
+```
+
+
+```{r}
+# Loading the data
+data('divorce_margarine')
+
+dm <- data.frame(divorce_margarine)
+
+```
+
+
+```{r}
+library(grid)
+
+gradient <- rasterGrob(
+  colorRampPalette(c("red", "orange", "yellow", "green", "blue", "purple"))(256), 
+  width = unit(1, "npc"), height = unit(1, "npc"), 
+  interpolate = TRUE
+)
+
+ggplot(dm, aes(x = margarine_consumption_per_capita, y = divorce_rate_maine)) +
+  annotation_custom(gradient, -Inf, Inf, -Inf, Inf) +
+  geom_point() +
+  geom_smooth(method = "lm", color = "black") +
+  ggtitle("Margarine Divorce Correlation") +
+  xlab("Margarine Consumption per Capita") +
+  ylab("Divorce Rate in Maine") +
+  theme(panel.background = element_blank())
+```
+
+Not taking into account any causation, there definitly seems to be a correlation. However, taking into account any theoretical causal reasons for the causation of margarine consumption on divorce rate, I would suggest this is only a spurious correlation. Further examination comes with the model investigation further down.
+
+```{r}
+# we now create a model of this using lm
+model_div <-lm(divorce_rate_maine ~ margarine_consumption_per_capita, dm)
+summary(model_div)
+
+
+# We further investigate by conducting a pearson's correlation test
+cor.test(dm$divorce_rate_maine, dm$margarine_consumption_per_capita, method = c("pearson"))
+```
+
+Based on the visual inspection of the model and the summary of the model and the correlation investigation, the correlational link between these two variables are clearly present. However, in the absense of any causal explanation and theoretical framework on this area, wer conclude there is no causational relation between these two variables, and I therefore conclude a "spurious" correlation. (Also, it says so in the data description)
+
+
+# Part 2
+##Education and Vocabulary
+```{r}
+# We load the data and sort out the correct year, and remove the missing data
+data('GSSvocab')
+
+df <- GSSvocab %>% 
+  filter(year == 1978) %>% 
+  na.exclude(.)
+
+```
+
+
+```{r}
+# We now investigate the impact of educational level on the vocabulary
+# we will do this visually first
+ggplot(df, aes(x = educ, y = vocab)) +
+  annotation_custom(gradient, -Inf, Inf, -Inf, Inf) +
+  geom_point(color = "black") +
+  theme(panel.background = element_blank()) +
+  ggtitle("Colorfull Plot of Vocabulary and Education") +
+  xlab("Education Level") +
+  ylab("Vocabulary")
+
+
+```
+
+
+```{r}
+model2 <- glm(vocab ~ educ, family = "gaussian", df)
+summary(model2)
+```
+
+Based on the visual inspection of the data and the model created, we conclude the following: As there is both a probable causal explanation (that people increase their vocabulary as they get more educated), and there is a clear correlation based on the fitted model, there is indeed an impact on the vocabulary by the educational level. There is a significant positive relation between the level of education (\beta = 0.39, SE = 0.02, t(1475) = 24.44, p > 0.05).
+
+## Adding the native born variable
+```{r}
+# We will now investigate whether being a native born speaker has an influence on the vocabulary
+# First we visually investigate the relation between vocab and native speaker variables
+
+ggplot(df, aes(x = nativeBorn, y = vocab)) +
+  annotation_custom(gradient, -Inf, Inf, -Inf, Inf) +
+  geom_point(color = "black") +
+  theme(panel.background = element_blank()) +
+  ggtitle("Colorfull plot of Vocabulary and Native Born") +
+  xlab("Native Born") +
+  ylab("Vocabulary")
+
+
+```
+
+```{r}
+model3 <- glm(vocab ~ educ + nativeBorn, family = "gaussian", df)
+summary(model3)
+```
+
+From the resulting visual representation and the model it is clear that the predictor nativeBornyes (meaning that you are native born) (\beta = 0.65, SE = 0.21, t(1474) = 3.16, p > 0.05) does have an impact on the vocabulary. This is also the case from a causal explanation point of view.
+
+## Native born and education variables
+
+```{r}
+ggplot(df, aes(x = nativeBorn, y = educ)) +
+  annotation_custom(gradient, -Inf, Inf, -Inf, Inf) +
+  geom_point(color = "black") +
+  theme(panel.background = element_blank()) +
+  ggtitle("Colorfull Plot of Educational Level and Native Born") +
+  xlab("Native Born") +
+  ylab("Educational Level")
+
+```
+It does not seem like there is a strong correlation in this regard. We try out adding it as an interaction anyways
+
+```{r}
+model4 <- glm(vocab ~ educ * nativeBorn, family = "gaussian", df)
+
+summary(model4)
+
+```
+
+```{r}
+
+AIC(model2, model3, model4)
+
+```
+
+By comparing the models using the AIC, we conclude that the second model (without interaction), including both educational level (\beta = 0.39, SE = 0.2, t(1475) = 24.50, p > 0.05) and native born (\beta = 0.65, SE = 0.21, t(1474) =3.16, p > 0.05) is the one that explains the data the best.
+
+
+
+
+
+
+
+
+
+
+
