@@ -29,12 +29,14 @@ dm <- data.frame(divorce_margarine)
 ```{r}
 library(grid)
 
+# we have here considered the use of color. This is not to showcase any political affiliation, just simply exploring the task description to its fullest. To enjoy the color show in its full glory, please view on an expensive HDR monitor, preferably with A+ energy rating to conserve the environment
 gradient <- rasterGrob(
   colorRampPalette(c("red", "orange", "yellow", "green", "blue", "purple"))(256), 
   width = unit(1, "npc"), height = unit(1, "npc"), 
   interpolate = TRUE
 )
 
+# Creating a geom point plot, also known as a scattr plot, with a geom_smooth line that shows a linear regression over the datapoints to show the clear correlational relation between the consumption of margarine and divorce rate in main. 
 ggplot(dm, aes(x = margarine_consumption_per_capita, y = divorce_rate_maine)) +
   annotation_custom(gradient, -Inf, Inf, -Inf, Inf) +
   geom_point() +
@@ -75,7 +77,7 @@ df <- GSSvocab %>%
 
 ```{r}
 # We now investigate the impact of educational level on the vocabulary
-# we will do this visually first
+# we will do this visually first. Of course we use the same awesome display of color
 ggplot(df, aes(x = educ, y = vocab)) +
   annotation_custom(gradient, -Inf, Inf, -Inf, Inf) +
   geom_point(color = "black") +
@@ -89,6 +91,7 @@ ggplot(df, aes(x = educ, y = vocab)) +
 
 
 ```{r}
+# We here create a GLM with a gaussian family to investigate the relation between vocabulary and educational level
 model2 <- glm(vocab ~ educ, family = "gaussian", df)
 summary(model2)
 ```
@@ -112,6 +115,7 @@ ggplot(df, aes(x = nativeBorn, y = vocab)) +
 ```
 
 ```{r}
+# Exploring both the effect of education and nativeborn variable on the vocabulary
 model3 <- glm(vocab ~ educ + nativeBorn, family = "gaussian", df)
 summary(model3)
 ```
@@ -133,6 +137,7 @@ ggplot(df, aes(x = nativeBorn, y = educ)) +
 It does not seem like there is a strong correlation in this regard. We try out adding it as an interaction anyways
 
 ```{r}
+# Exploring both predictor varibles and their interaction
 model4 <- glm(vocab ~ educ * nativeBorn, family = "gaussian", df)
 
 summary(model4)
@@ -140,7 +145,7 @@ summary(model4)
 ```
 
 ```{r}
-
+# Using Akaike Information Criterion to test the different models. AIC is of course quite outdated, but we use it anyway.
 AIC(model2, model3, model4)
 
 ```
